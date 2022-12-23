@@ -1,0 +1,9 @@
+# Compiled output
+dist
+esm
+build
+coverage
+node_modules
+
+# Yarn errors
+yarn-error.log

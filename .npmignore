@@ -1,0 +1,16 @@
+.DS_Store
+.idea
+.vscode
+node_modules
+src
+coverage
+.idea
+.vscode
+
+.*
+dev-aliases
+Dockerfile
+*.config.js
+*.json
+*.yml
+*.log

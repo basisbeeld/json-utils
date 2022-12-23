@@ -1,0 +1,36 @@
+{
+  "name": "@ogd-software/json-utils",
+  "version": "0.2",
+  "description": "JSON utilities to process changes and paths in json objects",
+  "repository": "https://code.ogdsoftware.nl/mantis/platform",
+  "author": "Incubator",
+  "license": "MIT",
+  "scripts": {
+    "dev": "yarn run build:commonjs --watch & yarn run build:esm --watch && kill $!",
+    "lint": "eslint src/**/*.js",
+    "test": "jest",
+    "test:coverage": "jest --coverage --coverageDirectory=\"./coverage\"",
+    "test:watch": "jest --watch",
+    "build:esm": "rm -rf esm && NODE_ENV='production' BUILD_ESM='true' yarn run babel -f ./babel.config.js src --source-maps --out-dir esm",
+    "build:commonjs": "rm -rf dist && NODE_ENV='production' yarn run babel -f ./babel.config.js src --source-maps --out-dir dist",
+    "build:bundle": "rm -rf build && NODE_ENV='production' yarn run babel -f ./babel.config.js src --source-maps --out-file build/index.js",
+    "build:release": "yarn run lint && yarn run test:coverage && yarn run build:commonjs && yarn run build:esm && yarn run build:bundle"
+  },
+  "main": "dist/index.js",
+  "module": "esm/index.js",
+  "dependencies": {
+    "jsonpath": "1.1.1"
+  },
+  "devDependencies": {
+    "@babel/cli": "7.17.0",
+    "@babel/core": "7.17.0",
+    "@babel/preset-env": "7.16.11",
+    "babel-loader": "8.2.3",
+    "babel-plugin-explicit-exports-references": "1.0.2",
+    "eslint": "8.6.0",
+    "eslint-config-airbnb": "19.0.4",
+    "eslint-import-resolver-alias": "1.1.2",
+    "eslint-plugin-import": "2.25.4",
+    "jest": "27.4.7"
+  }
+}
