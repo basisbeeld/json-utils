@@ -2,9 +2,12 @@
   "name": "@ogd-software/json-utils",
   "version": "0.2",
   "description": "JSON utilities to process changes and paths in json objects",
-  "repository": "https://code.ogdsoftware.nl/mantis/platform",
+  "repository": "https://github.com/ogd-software/json-utils",
   "author": "Incubator",
   "license": "MIT",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "scripts": {
     "dev": "yarn run build:commonjs --watch & yarn run build:esm --watch && kill $!",
     "lint": "eslint src/**/*.js",
@@ -31,6 +34,6 @@
     "eslint-config-airbnb": "19.0.4",
     "eslint-import-resolver-alias": "1.1.2",
     "eslint-plugin-import": "2.25.4",
-    "jest": "27.4.7"
+    "jest": "29.3.1"
   }
 }
