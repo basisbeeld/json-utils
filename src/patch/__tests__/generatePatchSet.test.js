@@ -13,7 +13,7 @@ describe("generatePatchSet", () => {
 
       const result = generatePatchSet(rootObj, patchJsonPath, newValue);
 
-      expect(result).toStrictEqual(["", { someObj: { aNewObj: { aNewKey: newValue } } }]);
+      expect(result).toMatchObject(["", { someObj: { aNewObj: { aNewKey: newValue } } }]);
     });
     test("returns an object within a new object with a new key if all do not exist", () => {
       const rootObj = {
@@ -24,7 +24,7 @@ describe("generatePatchSet", () => {
 
       const result = generatePatchSet(rootObj, patchJsonPath, newValue);
 
-      expect(result).toStrictEqual(["someObj", { aNewObj: { aNewKey: newValue } }]);
+      expect(result).toMatchObject(["someObj", { aNewObj: { aNewKey: newValue } }]);
     });
     test("returns a new object with a new key if both do not exist", () => {
       const rootObj = { topObj: { aNewObj: {} } };
@@ -33,7 +33,7 @@ describe("generatePatchSet", () => {
 
       const result = generatePatchSet(rootObj, patchJsonPath, newValue, { pathAnnotationOutput: "jsonb" });
 
-      expect(result).toStrictEqual(["topObj:aNewObj", {
+      expect(result).toMatchObject(["topObj:aNewObj", {
         aNewKey: newValue,
       }]);
     });
@@ -49,7 +49,7 @@ describe("generatePatchSet", () => {
       const newValue = "new";
 
       const result = generatePatchSet(rootObj, patchJsonPath, newValue, { pathAnnotationOutput: "jsonb" });
-      expect(result).toStrictEqual([patchJsonPath, newValue]);
+      expect(result).toMatchObject([patchJsonPath, newValue]);
     });
     test("returns the input variables as output if nothing changed", () => {
       const rootObj = {
@@ -63,7 +63,7 @@ describe("generatePatchSet", () => {
       const newValue = "current";
 
       const result = generatePatchSet(rootObj, patchJsonPath, newValue, { pathAnnotationOutput: "jsonb" });
-      expect(result).toStrictEqual([patchJsonPath, newValue]);
+      expect(result).toMatchObject([patchJsonPath, newValue]);
     });
     test("returns an object when an identifier contains, besides text, also an id", () => {
       const rootObj = {
@@ -77,7 +77,7 @@ describe("generatePatchSet", () => {
       const newValue = "added";
 
       const result = generatePatchSet(rootObj, patchJsonPath, newValue, { pathAnnotationOutput: "jsonb" });
-      expect(result).toStrictEqual(["topObj:aNewObj", { test: "current", test2: "added" }]);
+      expect(result).toMatchObject(["topObj:aNewObj", { test: "current", test2: "added" }]);
     });
     test("returns a merged object if the object exists but not the requested object key in the lookup path", () => {
       const rootObj = {
@@ -91,7 +91,7 @@ describe("generatePatchSet", () => {
       const newValue = "current";
 
       const result = generatePatchSet(rootObj, patchJsonPath, newValue, { pathAnnotationOutput: "jsonb" });
-      expect(result).toStrictEqual(["topObj:aNewObj", {
+      expect(result).toMatchObject(["topObj:aNewObj", {
         anExistingKey: "keep me",
         aNewKey: "current",
       }]);
@@ -105,7 +105,7 @@ describe("generatePatchSet", () => {
         const newValue = 0;
 
         const result = generatePatchSet(rootObj, patchJsonPath, newValue, { pathAnnotationOutput: "jsonb" });
-        expect(result).toStrictEqual([patchJsonPath, newValue]);
+        expect(result).toMatchObject([patchJsonPath, newValue]);
       });
       test("a boolean value", () => {
         const rootObj = {
@@ -115,7 +115,7 @@ describe("generatePatchSet", () => {
         const newValue = false;
 
         const result = generatePatchSet(rootObj, patchJsonPath, newValue, { pathAnnotationOutput: "jsonb" });
-        expect(result).toStrictEqual([patchJsonPath, newValue]);
+        expect(result).toMatchObject([patchJsonPath, newValue]);
       });
       test("a null value", () => {
         const rootObj = {
@@ -125,7 +125,7 @@ describe("generatePatchSet", () => {
         const newValue = null;
 
         const result = generatePatchSet(rootObj, patchJsonPath, newValue, { pathAnnotationOutput: "jsonb" });
-        expect(result).toStrictEqual([patchJsonPath, newValue]);
+        expect(result).toMatchObject([patchJsonPath, newValue]);
       });
     });
   });
@@ -141,7 +141,7 @@ describe("generatePatchSet", () => {
 
       const result = generatePatchSet(rootObj, patchJsonPath, newValue, { pathAnnotationOutput: "jsonb" });
 
-      expect(result).toStrictEqual(["topObj:anExistingArray", ["I'm first", null, { aNewKey: newValue }]]);
+      expect(result).toMatchObject(["topObj:anExistingArray", ["I'm first", undefined, { aNewKey: newValue }]]);
     });
     test("extends an existing array with another array with content at the related index", () => {
       const rootObj = {
@@ -155,7 +155,7 @@ describe("generatePatchSet", () => {
 
       const result = generatePatchSet(rootObj, patchJsonPath, newValue, { pathAnnotationOutput: "jsonb" });
 
-      expect(result).toStrictEqual(["topObj:someArray", [null, null, [{ aNewKey: { anotherKey: newValue } }]]]);
+      expect(result).toMatchObject(["topObj:someArray", [undefined, undefined, [{ aNewKey: { anotherKey: newValue } }]]]);
     });
     test("returns only the changed value if the array length covers the requested json path", () => {
       const existingObj = {
@@ -170,7 +170,7 @@ describe("generatePatchSet", () => {
 
       const result = generatePatchSet(existingObj, patchJsonPath, newValue, { pathAnnotationOutput: "jsonb" });
 
-      expect(result).toStrictEqual(["foobar:someObj.aKey[1]", newValue]);
+      expect(result).toMatchObject(["foobar:someObj.aKey[1]", newValue]);
     });
     test("returns a filled in array when the requested top level json path is an empty array", () => {
       const existingObj = {
@@ -181,29 +181,29 @@ describe("generatePatchSet", () => {
       const newValue = "added";
       const result = generatePatchSet(existingObj, patchJsonPath, newValue, { pathAnnotationOutput: "jsonb" });
 
-      expect(result).toStrictEqual(["foobar", [null, newValue]]);
+      expect(result).toMatchObject(["foobar", [undefined, newValue]]);
     });
   });
   describe("with non-objects as lookup input", () => {
     test("returns the value when input is type string", () => {
       const result = generatePatchSet("input", "", "output");
 
-      expect(result).toStrictEqual(["", "output"]);
+      expect(result).toMatchObject(["", "output"]);
     });
     test("returns the value when input is type boolean", () => {
       const result = generatePatchSet(true, "", false);
 
-      expect(result).toStrictEqual(["", false]);
+      expect(result).toMatchObject(["", false]);
     });
     test("returns the value when input is type integer", () => {
       const result = generatePatchSet(0, "", 1);
 
-      expect(result).toStrictEqual(["", 1]);
+      expect(result).toMatchObject(["", 1]);
     });
     test("returns undefined if undefined input is patched with undefined", () => {
       const result = generatePatchSet(undefined, "", undefined);
 
-      expect(result).toStrictEqual(["", undefined]);
+      expect(result).toMatchObject(["", undefined]);
     });
   });
   describe("resolves json path output by", () => {
@@ -220,7 +220,7 @@ describe("generatePatchSet", () => {
       const newValue = "valid";
       const result = generatePatchSet(existingObj, patchJsonPath, newValue, { pathAnnotationOutput: "jsonb" });
 
-      expect(result).toStrictEqual([patchJsonPath, newValue]);
+      expect(result).toMatchObject([patchJsonPath, newValue]);
     });
     test("returning a json path with dot notation for objects that does not contain special characters", () => {
       const existingObj = {
@@ -235,7 +235,7 @@ describe("generatePatchSet", () => {
       const newValue = "valid";
       const result = generatePatchSet(existingObj, patchJsonPath, newValue, { pathAnnotationOutput: "jsonb" });
 
-      expect(result).toStrictEqual(["foobar:noSpecialValue.good", newValue]);
+      expect(result).toMatchObject(["foobar:noSpecialValue.good", newValue]);
     });
     test("returning a json path with dot notation when annotated with a digit", () => {
       const existingObj = {
@@ -250,7 +250,7 @@ describe("generatePatchSet", () => {
       const newValue = "first value";
       const result = generatePatchSet(existingObj, patchJsonPath, newValue, { pathAnnotationOutput: "jsonb" });
 
-      expect(result).toStrictEqual(["foobar:aSimpleArray[0]", newValue]);
+      expect(result).toMatchObject(["foobar:aSimpleArray[0]", newValue]);
     });
   });
   describe("resolves type cast conflicts", () => {
@@ -268,7 +268,7 @@ describe("generatePatchSet", () => {
 
         const result = generatePatchSet(rootObj, patchJsonPath, newValue, { pathAnnotationOutput: "jsonb" });
 
-        expect(result).toStrictEqual(["topObj:someObj", [null, null, { aRandomKey: newValue }, { currentKey: "currentValue" }]]);
+        expect(result).toMatchObject(["topObj:someObj", [undefined, undefined, { aRandomKey: newValue }, { currentKey: "currentValue" }]]);
       });
       test("casts an existing array to an object, results into a key-value pair of the array as the new object key-value", () => {
         const rootObj = {
@@ -283,7 +283,7 @@ describe("generatePatchSet", () => {
 
         const result = generatePatchSet(rootObj, patchJsonPath, newValue, { pathAnnotationOutput: "jsonb" });
 
-        expect(result).toStrictEqual(["topObj:someObj", { aRandomKey: newValue, 0: { currentKey: "currentValue" } }]);
+        expect(result).toMatchObject(["topObj:someObj", { aRandomKey: newValue, 0: { currentKey: "currentValue" } }]);
       });
     });
     describe("with forceDigitsToBeTypeArray = true, keepDataOnForcedTypeCasting = false", () => {
@@ -304,7 +304,7 @@ describe("generatePatchSet", () => {
           pathAnnotationOutput: "jsonb",
         });
 
-        expect(result).toStrictEqual(["topObj:someObj", [null, null, { aRandomKey: newValue }]]);
+        expect(result).toMatchObject(["topObj:someObj", [undefined, undefined, { aRandomKey: newValue }]]);
       });
       test("casts an existing array to an object, results into a key-value pair of the array as the new object key-value", () => {
         const rootObj = {
@@ -323,7 +323,7 @@ describe("generatePatchSet", () => {
           pathAnnotationOutput: "jsonb",
         });
 
-        expect(result).toStrictEqual(["topObj:someObj", { aRandomKey: newValue }]);
+        expect(result).toMatchObject(["topObj:someObj", { aRandomKey: newValue }]);
       });
     });
     describe("with forceDigitsToBeTypeArray = false, keepDataOnForcedTypeCasting = true", () => {
@@ -344,7 +344,7 @@ describe("generatePatchSet", () => {
           pathAnnotationOutput: "jsonb",
         });
 
-        expect(result).toStrictEqual(["topObj:someObj", { currentKey: "currentValue", 2: { aRandomKey: "aRandomValue" } }]);
+        expect(result).toMatchObject(["topObj:someObj", { currentKey: "currentValue", 2: { aRandomKey: "aRandomValue" } }]);
       });
       test("casts an array to an object when a non-digit key is provided, create an object with new key and the array converted as key-value object pair", () => {
         const rootObj = {
@@ -363,7 +363,7 @@ describe("generatePatchSet", () => {
           pathAnnotationOutput: "jsonb",
         });
 
-        expect(result).toStrictEqual(["topObj:someObj", { aRandomKey: newValue, 0: { currentKey: "currentValue" } }]);
+        expect(result).toMatchObject(["topObj:someObj", { aRandomKey: newValue, 0: { currentKey: "currentValue" } }]);
       });
     });
     describe("with forceDigitsToBeTypeArray = false and keepDataOnForcedTypeCasting = false", () => {
@@ -384,7 +384,7 @@ describe("generatePatchSet", () => {
           pathAnnotationOutput: "jsonb",
         });
 
-        expect(result).toStrictEqual(["topObj:someObj", { currentKey: "currentValue", 2: { aRandomKey: "aRandomValue" } }]);
+        expect(result).toMatchObject(["topObj:someObj", { currentKey: "currentValue", 2: { aRandomKey: "aRandomValue" } }]);
       });
       test("casts an array to an object when a non-digit key is provided, replacing the entire array with an object with one key", () => {
         const rootObj = {
@@ -403,8 +403,28 @@ describe("generatePatchSet", () => {
           pathAnnotationOutput: "jsonb",
         });
 
-        expect(result).toStrictEqual(["topObj:someObj", { aRandomKey: newValue }]);
+        expect(result).toMatchObject(["topObj:someObj", { aRandomKey: newValue }]);
       });
+    });
+  });
+  describe("with the option applyNullAtUndecidedArrayItems", () => {
+    test("set to false, an enlarged array contains undefined values", () => {
+      // treatInputAsImmutable is set to false to ensure no JSON encoding takes place.
+      const rootObj = ["foo"];
+      const patch = ["[2]", "added"];
+
+      const result = generatePatchSet(rootObj, ...patch, { treatInputAsImmutable: false, applyNullAtUndecidedArrayItems: false });
+
+      expect(result).toMatchObject(["", ["foo", undefined, "added"]]);
+    });
+    test("set to true, an enlarged array contains null values", () => {
+      // treatInputAsImmutable is set to false to ensure no JSON encoding takes place.
+      const rootObj = ["foo"];
+      const patch = ["[2]", "added"];
+
+      const result = generatePatchSet(rootObj, ...patch, { treatInputAsImmutable: false, applyNullAtUndecidedArrayItems: true });
+
+      expect(result).toMatchObject(["", ["foo", null, "added"]]);
     });
   });
 });
@@ -421,14 +441,14 @@ describe("generateCombinedPatchSet", () => {
     const patch3 = ["plan:iciRatings[5]", 3];
 
     const finalResult = generateCombinedPatchSet(rootObj, [patch1, patch2, patch3]);
-    expect(finalResult).toStrictEqual([[
+    expect(finalResult).toMatchObject([[
       "plan.iciRatings",
       [
         null,
         2,
         null,
         5,
-        null,
+        undefined,
         3,
       ],
     ],
@@ -453,7 +473,7 @@ describe("generateCombinedPatchSet", () => {
     const patch3 = ["plan:pars.random.value", "foo"];
 
     const finalResult = generateCombinedPatchSet(rootObj, [patch1, patch2, patch3]);
-    expect(finalResult).toStrictEqual([[
+    expect(finalResult).toMatchObject([[
       "plan.pars",
       {
         overview: {
@@ -487,7 +507,7 @@ describe("generateCombinedPatchSet", () => {
     const patch3 = ["plan:test2.aRandomKey", "updated"];
 
     const finalResult = generateCombinedPatchSet(rootObj, [patch1, patch2, patch3]);
-    expect(finalResult).toStrictEqual([[
+    expect(finalResult).toMatchObject([[
       "plan",
       {
         test: {
@@ -525,20 +545,20 @@ describe("generateCombinedPatchSet", () => {
     const patch3 = ["plan:test2.aRandomKey", "updated"];
 
     const finalResult = generateCombinedPatchSet(rootObj, [patch1, patch2, patch3]);
-    expect(finalResult).toStrictEqual(
-        [[
-          "plan.test",
-          {
-            value: "",
-          },
-        ],
-          [
-            "plan.test2",
-            {
-              value: "",
-              aRandomKey: "updated",
-            },
-          ]],
+    expect(finalResult).toMatchObject(
+      [[
+        "plan.test",
+        {
+          value: "",
+        },
+      ],
+      [
+        "plan.test2",
+        {
+          value: "",
+          aRandomKey: "updated",
+        },
+      ]],
     );
     expect(finalResult).toHaveLength(2);
   });
@@ -551,7 +571,7 @@ describe("generateCombinedPatchSet", () => {
     const patch2 = ["iciRatings:[3]", 4];
 
     const finalResult = generateCombinedPatchSet(rootObj, [patch1, patch2]);
-    expect(finalResult).toStrictEqual([["", { iciRatings: [1, 2, 3, 4] }]]);
+    expect(finalResult).toMatchObject([["", { iciRatings: [1, 2, 3, 4] }]]);
     expect(finalResult).toHaveLength(1);
   });
   test("returns the same array as the original if all patches summed up result into that", () => {
@@ -564,7 +584,7 @@ describe("generateCombinedPatchSet", () => {
     const patch3 = ["iciRatings:[2]", 1];
 
     const finalResult = generateCombinedPatchSet(rootObj, [patch1, patch2, patch3]);
-    expect(finalResult).toStrictEqual([["iciRatings", [1, 2, 1, 4]]]);
+    expect(finalResult).toMatchObject([["iciRatings", [1, 2, 1, 4]]]);
     expect(finalResult).toHaveLength(1);
   });
   test("handles null as jsonObj input", () => {
@@ -572,14 +592,14 @@ describe("generateCombinedPatchSet", () => {
     const patches = [["relationship[0]", "foo"]];
 
     const finalResult = generateCombinedPatchSet(rootObj, patches);
-    expect(finalResult).toStrictEqual([["", { relationship: ["foo"] }]]);
+    expect(finalResult).toMatchObject([["", { relationship: ["foo"] }]]);
   });
   test("handles undefined as jsonObj and patch input", () => {
     const rootObj = undefined;
     const patches = [["", undefined]];
 
     const finalResult = generateCombinedPatchSet(rootObj, patches);
-    expect(finalResult).toStrictEqual([["", undefined]]);
+    expect(finalResult).toMatchObject([["", undefined]]);
   });
   describe("takes weights into account", () => {
     test("overwrites incremental patches with a global patch with a higher weight", () => {
@@ -591,7 +611,7 @@ describe("generateCombinedPatchSet", () => {
       const patch2 = ["iciRatings:[3]", 4];
 
       const finalResult = generateCombinedPatchSet(rootObj, [patch1, patch2]);
-      expect(finalResult).toStrictEqual([["", { iciRatings: [1, 2, 3, 5] }]]);
+      expect(finalResult).toMatchObject([["", { iciRatings: [1, 2, 3, 5] }]]);
       expect(finalResult).toHaveLength(1);
     });
     test("combines root patches with incremental patches with the same or higher weight, overwriting incremental patches with a lower weight in an overwritten key", () => {
@@ -606,8 +626,8 @@ describe("generateCombinedPatchSet", () => {
       const patch4 = ["iciRatingsOther:[2]", 30, 2];
 
       const finalResult = generateCombinedPatchSet(rootObj, [patch1, patch2, patch3, patch4]);
-      expect(finalResult).toStrictEqual([
-        ["", { iciRatings: [1, 2, 3, 5], iciRatingsOther: [null, 20, 30] }],
+      expect(finalResult).toMatchObject([
+        ["", { iciRatings: [1, 2, 3, 5], iciRatingsOther: [undefined, 20, 30] }],
       ]);
       expect(finalResult).toHaveLength(1);
     });
@@ -623,7 +643,7 @@ describe("generateCombinedPatchSet", () => {
       const patch4 = ["iciRatingsOther:[1]", 0, 2]; // overwrites patch2
 
       const finalResult = generateCombinedPatchSet(rootObj, [patch1, patch2, patch3, patch4]);
-      expect(finalResult).toStrictEqual([
+      expect(finalResult).toMatchObject([
         ["iciRatingsOther[0]", 10],
         ["iciRatingsOther[1]", 0],
         ["iciRatingsOther[2]", 30],
@@ -644,22 +664,25 @@ describe("generateCombinedPatchSet", () => {
 
       const finalResult = generateCombinedPatchSet(rootObj, [patch1, patch2]);
       const finalResult2 = generateCombinedPatchSet(rootObj, [sameWeightPatch1, sameWeightPatch2]);
-      expect(finalResult).toStrictEqual([["", undefined]]);
-      expect(finalResult2).toStrictEqual([["", { iciRatingsOther: [10] }]]);
+      expect(finalResult).toMatchObject([["", undefined]]);
+      expect(finalResult2).toMatchObject([["", { iciRatingsOther: [10] }]]);
     });
   });
 });
 describe("applyPatchOnObject", () => {
   describe("with treatInputAsImmutable = true", () => {
     test("and JS env does not have the structuredClone function available, undefined is changed to null", () => {
-      // TODO: ensure that if environment has structuredClone available, mock the function and return undefined.
       const rootObj = ["foo", undefined, "original"];
       const patch = ["[2]", "changed"];
 
-      const result = applyPatchOnObject(rootObj, ...patch);
+      const restore = global.structuredClone;
+      global.structuredClone = undefined;
 
-      expect(result).toStrictEqual(["foo", null, "changed"]);
-      expect(rootObj).toStrictEqual(["foo", undefined, "original"]);
+      const result = applyPatchOnObject(rootObj, ...patch);
+      global.structuredClone = restore;
+
+      expect(result).toMatchObject(["foo", null, "changed"]);
+      expect(rootObj).toMatchObject(["foo", undefined, "original"]);
     });
     test("the rootObj is not changed", () => {
       const rootObj = ["foo", 1, "original"];
@@ -667,8 +690,8 @@ describe("applyPatchOnObject", () => {
 
       const result = applyPatchOnObject(rootObj, ...patch);
 
-      expect(result).toStrictEqual(["foo", 1, "changed"]);
-      expect(rootObj).toStrictEqual(["foo", 1, "original"]);
+      expect(result).toMatchObject(["foo", 1, "changed"]);
+      expect(rootObj).toMatchObject(["foo", 1, "original"]);
     });
   });
   test("with treatInputAsImmutable = false the rootObj is changed", () => {
@@ -677,7 +700,7 @@ describe("applyPatchOnObject", () => {
 
     const result = applyPatchOnObject(rootObj, ...patch, { treatInputAsImmutable: false });
 
-    expect(result).toStrictEqual(["foo", undefined, "changed"]);
-    expect(rootObj).toStrictEqual(["foo", undefined, "changed"]);
+    expect(result).toMatchObject(["foo", undefined, "changed"]);
+    expect(rootObj).toMatchObject(["foo", undefined, "changed"]);
   });
 });

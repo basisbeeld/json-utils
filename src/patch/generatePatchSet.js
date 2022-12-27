@@ -42,7 +42,7 @@ function typeCasting(existingItem, lookupPath, forceDigitsToBeTypeArray = true, 
  * @param {Object} [opts] Options that can be provided for the conversation, used to handle type mismatches. Check generateCombinedPatchSet documentation for specifics.
  * @return {[string, *]} Where the first item is the patch key, second the patch value.
  */
-function generatePatch(existingItem, pathArray, index, value, opts) {
+function generatePatch(existingItem, pathArray, index, value, opts = {}) {
   // Generate the path that needs to be created in the patch object.
   const leftOverPath = pathArray.slice(index);
   // Decide which type will be used as root object.
@@ -66,7 +66,7 @@ function generatePatch(existingItem, pathArray, index, value, opts) {
       const arraySize = key + 1;
       if (Array.isArray(o) && o.length < arraySize) {
         // The current array in the object is not long enough for our path request, enlarge it.
-        o.push(...Array(arraySize - o.length - 1).fill(null));
+        o.push(...Array(arraySize - o.length - 1).fill(opts.applyNullAtUndecidedArrayItems === true ? null : undefined));
       }
     }
     // Assign new value to the object and return it so the next lookup request can use it as well.
@@ -139,6 +139,7 @@ function applyPatchOnObject(jsonObj, path, value, options = {}) {
  * @param {boolean} [options.keepDataOnForcedTypeCasting=true] Set to true to add 'replaced' types after casting in some way to the newly casted type. Example: filled array casted to object is added as key to object, object casted to array is added at the end of the newly casted and processed array.
  * @param {("json"|"jsonb")} [options.pathAnnotationOutput="json"] The annotation type the json path output must be exported.
  * @param {boolean} [options.treatInputAsImmutable=true] True to make a deep copy of the input that is patched, false to change the original object.
+ * @param {boolean} [options.applyNullAtUndecidedArrayItems=false] Arrays that are enlarged or (partly) overwritten might contain items without value (undefined). If boolean is set to true, the value is set to null. Recommended setting in case a JSON format or alike is expected as output.
  * @return {[string, *]} Where the first item is the patch key and the second item the patch value.
  */
 function generatePatchSet(jsonObj, path, value, options) {
@@ -151,6 +152,7 @@ function generatePatchSet(jsonObj, path, value, options) {
     keepDataOnForcedTypeCasting: true,
     pathAnnotationOutput: "json",
     treatInputAsImmutable: true,
+    applyNullAtUndecidedArrayItems: false,
     ...options,
   };
 
@@ -201,6 +203,7 @@ function generatePatchSet(jsonObj, path, value, options) {
  * @param {boolean} [options.keepDataOnForcedTypeCasting=true] Set to true to add 'replaced' types after casting in some way to the newly casted type. Example: filled array casted to object is added as key to object, object casted to array is added at the end of the newly casted and processed array.
  * @param {("json"|"jsonb")} [options.pathAnnotationOutput="json"] The annotation type the json path output must be exported.
  * @param {boolean} [options.treatInputAsImmutable=true] True to make a deep copy of the input that is patched, false to change the original object.
+ * @param {boolean} [options.applyNullAtUndecidedArrayItems=false] Arrays that are enlarged or (partly) overwritten might contain items without value (undefined). If boolean is set to true, the value is set to null. Recommended setting in case a JSON format or alike is expected as output.
  * @return {[[string, *]]} Double-dimension arrays items where for each sub-array record the first item is the patch key and the second item the patch value.
  */
 function generateCombinedPatchSet(originalJsonObj, patchSets, options) {
@@ -209,6 +212,7 @@ function generateCombinedPatchSet(originalJsonObj, patchSets, options) {
     keepDataOnForcedTypeCasting: true,
     pathAnnotationOutput: "json",
     treatInputAsImmutable: true,
+    applyNullAtUndecidedArrayItems: false,
     ...options,
   };
 
