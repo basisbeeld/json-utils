@@ -3,6 +3,69 @@ import { createJsonPathScope } from "../path/jsonPath";
 import { convertJsonPathIntoJsonBPath } from "../path/jsonBPath";
 import { findAvailablePathAndAttachedObject, getValueAtExactPath } from "./find";
 
+const isPlainObject = (item) => (item && typeof item === "object" && !Array.isArray(item));
+
+/**
+ * Merge two objects/arrays (where the first value is being overwritten by the second one).
+ * @param {Object} existingItem Previous item being overwritten/patched.
+ * @param {Object} newItem The patch value itself
+ * @param {Object} [options] Options that can be provided for the conversation, used to handle type mismatches.
+ * @param {boolean} [options.keepDataOnForcedTypeCasting=true] Set to true to add 'replaced' types after casting in some way to the newly casted type. Example: filled array casted to object is added as key to object, object casted to array is added at the end of the newly casted and processed array.
+ * @param {"none"|"shallow"|"deep"} [options.mergeWithPreviousData="none"] **Experimental, Alpha feature** Set to 'shallow' or 'deep' to merge previous data of object types. Example: if an object {key:value} is being patched to {}, the key-value pair remain.
+ * @returns {{addToArrayAfterProcessing: *[], generatedObj}}
+ */
+function mergeItem(existingItem, newItem, options = {}) {
+  const generatedObj = newItem;
+  const addToArrayAfterProcessing = [];
+  const opts = {
+    keepDataOnForcedTypeCasting: true,
+    mergeWithPreviousData: "none",
+    ...options,
+  };
+  if (opts.mergeWithPreviousData !== "none") {
+    if (Array.isArray(existingItem)) {
+      if (Array.isArray(generatedObj)) {
+        generatedObj.push(...existingItem);
+      } else if (typeof generatedObj === "object" && opts.keepDataOnForcedTypeCasting) {
+        Object.assign(generatedObj, existingItem);
+      }
+    } else if (typeof existingItem === "object" && existingItem !== null) {
+      if (Array.isArray(generatedObj) && opts.keepDataOnForcedTypeCasting) {
+        addToArrayAfterProcessing.push(existingItem);
+      } else if (typeof generatedObj === "object" && !Array.isArray(generatedObj)) {
+        if (opts.mergeWithPreviousData === "shallow") {
+          Object.assign(generatedObj, {
+            ...existingItem,
+            ...generatedObj,
+          });
+        } else {
+          // Beta features based on https://scribe.bus-hit.me/how-to-deep-merge-javascript-objects-12a7235f5573
+          // More than enough edge cases not covered yet
+          Object.entries(existingItem).forEach(([key, value]) => {
+            if (isPlainObject(generatedObj[key])) {
+              if (!generatedObj[key]) {
+                Object.assign(generatedObj, {
+                  [key]: {},
+                });
+              }
+              Object.assign(generatedObj[key], mergeItem(value, generatedObj[key], opts).generatedObj);
+            } else {
+              Object.assign(generatedObj, {
+                [key]: value,
+              });
+            }
+          });
+        }
+      }
+    }
+  }
+
+  return {
+    generatedObj,
+    addToArrayAfterProcessing,
+  };
+}
+
 /**
  * This function creates a root object for the generatePatch function for it's processing. This function tries to preserve as much information from the root object, but might drop information based on the boolean input parameters when it detects a drift in object type. When a drift is detected the input type is converted to the calculated output type where to information loss occurs.
  * @param {*} existingItem Item containing potential information that might need to be casted.
@@ -13,24 +76,10 @@ import { findAvailablePathAndAttachedObject, getValueAtExactPath } from "./find"
  */
 function typeCasting(existingItem, lookupPath, forceDigitsToBeTypeArray = true, keepDataOnForcedTypeCasting = true) {
   const generatedObj = lookupPath.match(digitRE) && (Array.isArray(existingItem) || typeof existingItem === "undefined" || Object.keys(existingItem).length === 0 || forceDigitsToBeTypeArray) ? [] : {};
-  const addToArrayAfterProcessing = [];
-  if (Array.isArray(existingItem)) {
-    if (Array.isArray(generatedObj)) {
-      generatedObj.push(...existingItem);
-    } else if (typeof generatedObj === "object" && keepDataOnForcedTypeCasting) {
-      Object.assign(generatedObj, existingItem);
-    }
-  } else if (typeof existingItem === "object") {
-    if (Array.isArray(generatedObj) && keepDataOnForcedTypeCasting) {
-      addToArrayAfterProcessing.push(existingItem);
-    } else if (typeof generatedObj === "object" && !Array.isArray(generatedObj)) {
-      Object.assign(generatedObj, existingItem);
-    }
-  }
-  return {
-    generatedObj,
-    addToArrayAfterProcessing,
-  };
+  return mergeItem(existingItem, generatedObj, {
+    keepDataOnForcedTypeCasting,
+    mergeWithPreviousData: "shallow",
+  });
 }
 
 /**
@@ -138,23 +187,25 @@ function applyPatchOnObject(jsonObj, path, value, options = {}) {
  * @param {boolean} [options.forceDigitsToBeTypeArray=true] Set to true to force digits to be interpreted as array values, also when the specific jsonObj part is set to a different type. When set to false and an object is found, the digit is used as key for the object. Important note for jsonb output! When set to false, Postgres will not handle these objects properly on updates, as Postgres interprets digits as number, while only string values can be used as lookup key for objects!
  * @param {boolean} [options.keepDataOnForcedTypeCasting=true] Set to true to add 'replaced' types after casting in some way to the newly casted type. Example: filled array casted to object is added as key to object, object casted to array is added at the end of the newly casted and processed array.
  * @param {("json"|"jsonb")} [options.pathAnnotationOutput="json"] The annotation type the json path output must be exported.
- * @param {boolean} [options.treatInputAsImmutable=true] True to make a deep copy of the input that is patched, false to change the original object.
  * @param {boolean} [options.applyNullAtUndecidedArrayItems=false] Arrays that are enlarged or (partly) overwritten might contain items without value (undefined). If boolean is set to true, the value is set to null. Recommended setting in case a JSON format or alike is expected as output.
+ * @param {"none"|"shallow"|"deep"} [options.mergeWithPreviousData="none"] **Experimental, Alpha feature** Set to 'shallow' to merge previous data of object types. Example: if an object {key:value} is being patched to {}, the key-value pair remain.
  * @return {[string, *]} Where the first item is the patch key and the second item the patch value.
  */
 function generatePatchSet(jsonObj, path, value, options) {
-  if (!path) {
-    return ["", value];
-  }
-
   const opts = {
     forceDigitsToBeTypeArray: true,
     keepDataOnForcedTypeCasting: true,
     pathAnnotationOutput: "json",
-    treatInputAsImmutable: true,
     applyNullAtUndecidedArrayItems: false,
+    mergeWithPreviousData: "none",
     ...options,
   };
+  if (!path) {
+    if (typeof jsonObj === "object" && jsonObj !== null && typeof value === "object" && value !== null && opts.mergeWithPreviousData !== "none") {
+      return ["", mergeItem(jsonObj, value, opts).generatedObj];
+    }
+    return ["", value];
+  }
 
   // Convert any jsonb path (if applicable) to a normalized json path.
   const lookupPath = createJsonPathScope(path);
@@ -204,6 +255,7 @@ function generatePatchSet(jsonObj, path, value, options) {
  * @param {("json"|"jsonb")} [options.pathAnnotationOutput="json"] The annotation type the json path output must be exported.
  * @param {boolean} [options.treatInputAsImmutable=true] True to make a deep copy of the input that is patched, false to change the original object.
  * @param {boolean} [options.applyNullAtUndecidedArrayItems=false] Arrays that are enlarged or (partly) overwritten might contain items without value (undefined). If boolean is set to true, the value is set to null. Recommended setting in case a JSON format or alike is expected as output.
+ * @param {"none"|"shallow"|"deep"} [options.mergeWithPreviousData="none"] **Experimental, Alpha feature** Set to 'shallow' to merge previous data of object types. Example: if an object {key:value} is being patched to {}, the key-value pair remain.
  * @return {[[string, *]]} Double-dimension arrays items where for each sub-array record the first item is the patch key and the second item the patch value.
  */
 function generateCombinedPatchSet(originalJsonObj, patchSets, options) {
@@ -213,6 +265,7 @@ function generateCombinedPatchSet(originalJsonObj, patchSets, options) {
     pathAnnotationOutput: "json",
     treatInputAsImmutable: true,
     applyNullAtUndecidedArrayItems: false,
+    mergeWithPreviousData: "none",
     ...options,
   };
 

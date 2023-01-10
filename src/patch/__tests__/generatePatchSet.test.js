@@ -601,6 +601,78 @@ describe("generateCombinedPatchSet", () => {
     const finalResult = generateCombinedPatchSet(rootObj, patches);
     expect(finalResult).toMatchObject([["", undefined]]);
   });
+  describe("with the experimental option mergeWithPreviousData", () => {
+    test("merges an object one level deep if set to shallow", () => {
+      const rootObject = {
+        subKey: {
+          subKey2: {
+            value1: "foo",
+            value2: "bar",
+          },
+          subKey1: {
+            value1: "otherFoo",
+          },
+        },
+        subKeyOther: {},
+      };
+
+      const patches = [["", { subKey: { subKey2: { value3: "patch" } } }]];
+      const altPatches = [["subKey", { subKey2: { value3: "patch" } }]];
+      const finalResult = generateCombinedPatchSet(rootObject, patches, { mergeWithPreviousData: "shallow" });
+      const altFinalResult = generateCombinedPatchSet(rootObject, altPatches, { mergeWithPreviousData: "shallow" });
+
+      expect(finalResult).toMatchObject([["", { subKey: { subKey2: { value3: "patch" } }, subKeyOther: {} }]]);
+      expect(altFinalResult).toMatchObject([["subKey", { subKey2: { value3: "patch" }, subKey1: { value1: "otherFoo" } }]]);
+    });
+    test("merges an object entirely if set to deep and one value to undefined", () => {
+      const rootObject = {
+        value1: { foo: "bar" },
+        value2: { foo: "bar" },
+        value3: { foo: "bar" },
+        value4: { foo: "bar" },
+      };
+
+      const patches = [["", { value1: { }, value2: { }, value3: { } }], ["value4", undefined]];
+      const finalResult = generateCombinedPatchSet(rootObject, patches, { mergeWithPreviousData: "deep" });
+      expect(finalResult).toMatchObject([["", {
+        value1: { foo: "bar" },
+        value2: { foo: "bar" },
+        value3: { foo: "bar" },
+        value4: undefined,
+      }]]);
+    });
+    test("merges an object entirely if set to deep", () => {
+      const rootObject = {
+        subKey: {
+          subKey2: {
+            value1: "value",
+            value2: "bar",
+          },
+        },
+      };
+
+      const patches = [["", { subKey: { subKey2: { value3: "patch" } } }]];
+      const finalResult = generateCombinedPatchSet(rootObject, patches, { mergeWithPreviousData: "deep" });
+      expect(finalResult).toMatchObject([["", { subKey: { subKey2: { value1: "value", value2: "bar", value3: "patch" } } }]]);
+    });
+    test("by default (set to 'none') overwrites the object", () => {
+      const rootObject = {
+        subKey: {
+          subKey2: {
+            value1: "value",
+            value2: "bar",
+          },
+        },
+      };
+
+      const patches = [["", { subKey: { subKey2: { value3: "patch" } } }]];
+      const finalResult = generateCombinedPatchSet(rootObject, patches, { mergeWithPreviousData: "none" });
+      const defaultFinalResult = generateCombinedPatchSet(rootObject, patches);
+
+      expect(finalResult).toMatchObject([["", { subKey: { subKey2: { value3: "patch" } } }]]);
+      expect(defaultFinalResult).toMatchObject([["", { subKey: { subKey2: { value3: "patch" } } }]]);
+    });
+  });
   describe("takes weights into account", () => {
     test("overwrites incremental patches with a global patch with a higher weight", () => {
       const rootObj = {

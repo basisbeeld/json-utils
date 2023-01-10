@@ -56,7 +56,7 @@ function getValueAtExactPath(path, jsonObj, options = {}) {
   // TODO: currently if a path equals "$" it is interpreted as a key. Think about a possible solution if required.
   // Check if the path starts with a 'complex' json path
   if (((!Array.isArray(path) && path.startsWith("$.")) || (Array.isArray(path) && path.length > 1 && path[0] === "$"))) {
-    // When you entered this if statement a key is requested, so a the jsonObj must be type object.
+    // When you entered this if statement a key is requested, so the jsonObj must be type object.
     if (typeof jsonObj !== "object" || jsonObj === null) {
       return returnCallback();
     }
