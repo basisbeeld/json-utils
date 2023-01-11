@@ -32,7 +32,7 @@ function mergeItem(existingItem, newItem, options = {}) {
     } else if (typeof existingItem === "object" && existingItem !== null) {
       if (Array.isArray(generatedObj) && opts.keepDataOnForcedTypeCasting) {
         addToArrayAfterProcessing.push(existingItem);
-      } else if (typeof generatedObj === "object" && !Array.isArray(generatedObj)) {
+      } else if (typeof generatedObj === "object" && generatedObj !== "null" && !Array.isArray(generatedObj)) {
         if (opts.mergeWithPreviousData === "shallow") {
           Object.assign(generatedObj, {
             ...existingItem,
@@ -41,15 +41,11 @@ function mergeItem(existingItem, newItem, options = {}) {
         } else {
           // Beta features based on https://scribe.bus-hit.me/how-to-deep-merge-javascript-objects-12a7235f5573
           // More than enough edge cases not covered yet
+          const keys = Object.keys(generatedObj);
           Object.entries(existingItem).forEach(([key, value]) => {
-            if (isPlainObject(generatedObj[key])) {
-              if (!generatedObj[key]) {
-                Object.assign(generatedObj, {
-                  [key]: {},
-                });
-              }
+            if (isPlainObject(generatedObj[key]) && isPlainObject(value)) {
               Object.assign(generatedObj[key], mergeItem(value, generatedObj[key], opts).generatedObj);
-            } else {
+            } else if (!keys.includes(key)) { // Prevent overwriting keys of the patch itself
               Object.assign(generatedObj, {
                 [key]: value,
               });

@@ -1,6 +1,6 @@
 {
   "name": "@ogd-software/json-utils",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "JSON utilities to process changes and paths in json objects",
   "repository": "https://github.com/ogd-software/json-utils",
   "author": "Incubator",

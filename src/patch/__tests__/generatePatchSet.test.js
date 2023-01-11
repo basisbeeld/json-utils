@@ -632,14 +632,15 @@ describe("generateCombinedPatchSet", () => {
         value4: { foo: "bar" },
       };
 
-      const patches = [["", { value1: { }, value2: { }, value3: { } }], ["value4", undefined]];
+      const patches = [["", { value1: { foo: "foo" }, value2: { }, value3: { } }], ["value4", undefined]];
       const finalResult = generateCombinedPatchSet(rootObject, patches, { mergeWithPreviousData: "deep" });
       expect(finalResult).toMatchObject([["", {
-        value1: { foo: "bar" },
+        value1: { foo: "foo" },
         value2: { foo: "bar" },
         value3: { foo: "bar" },
         value4: undefined,
       }]]);
+      expect(finalResult).toHaveLength(1);
     });
     test("merges an object entirely if set to deep", () => {
       const rootObject = {
