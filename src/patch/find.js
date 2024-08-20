@@ -25,7 +25,7 @@ function findAvailablePathAndAttachedObject(path, jsonObj) {
       // Check if previousObj contained the key, but ignore this statement if we are at the end of the json path, as we do want to return a patch set, even if the value already exists.
       return [null, previousObj[lookupScope]];
     }
-    // Either the whole search path was found and we need to return the last item, or we have the return the current search path
+    // Either the whole search path was found, and we need to return the last item, or we have the return the current search path
     return typeof previousObj === "object" && previousObj !== null && typeof previousObj[lookupScope] !== "undefined" ? [createJsonPathScope(pathArray.slice(0, index + 1)), previousObj[lookupScope]] : [createJsonPathScope(pathArray.slice(0, index)), previousObj];
   }, [null, jsonObj]);
 }
@@ -51,7 +51,7 @@ function getValueAtExactPath(path, jsonObj, options = {}) {
   // Could not resolve the path, handling as value not found.
   const returnCallback = () => (typeof opts.defaultValueCallback === "function" ? opts.defaultValueCallback(path, opts.defaultValueOnMiss) : opts.defaultValueOnMiss);
 
-  let resolvedPath = path;
+  const resolvedPath = path;
   // TODO: currently if a path equals "$" it is interpreted as a key. Think about a possible solution if required.
   // Check if the path starts with a 'complex' json path
   if (((!Array.isArray(path) && path.startsWith("$.")) || (Array.isArray(path) && path.length > 1 && path[0] === "$"))) {
@@ -59,7 +59,7 @@ function getValueAtExactPath(path, jsonObj, options = {}) {
     if (typeof jsonObj !== "object" || jsonObj === null) {
       return returnCallback();
     }
-    throw new Error("Sorry but we removed JSONPath as the package is really unmaintained")
+    throw new Error("Sorry but we removed JSONPath as the package is really unmaintained");
   }
 
   const lookupPath = createJsonPathScope(resolvedPath);

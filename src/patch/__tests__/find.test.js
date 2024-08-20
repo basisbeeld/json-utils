@@ -110,7 +110,8 @@ describe("getValueAtExactPath", () => {
     expect(getValueAtExactPath("[1]", ["foo", "bar"])).toStrictEqual("bar");
     expect(getValueAtExactPath("", "foobar")).toStrictEqual("foobar");
   });
-  test("works with 'simple' complex json path examples", () => {
+  test.skip("works with 'simple' complex json path examples", () => {
+    // Skipped as we dropped support for the lib 'jsonpath'
     const obj = {
       arr: [{
         id: "findMe",

@@ -2,7 +2,10 @@
   "name": "@ogd-software/json-utils",
   "version": "0.2.4",
   "description": "JSON utilities to process changes and paths in json objects",
-  "repository": "https://github.com/ogd-software/json-utils",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ogd-software/json-utils.git"
+  },
   "author": "Incubator",
   "license": "MIT",
   "publishConfig": {
