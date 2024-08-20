@@ -1,4 +1,3 @@
-import jp from "jsonpath";
 import { createJsonPathScope } from "../path/jsonPath";
 import { digitRE } from "../lib/patterns";
 
@@ -60,13 +59,7 @@ function getValueAtExactPath(path, jsonObj, options = {}) {
     if (typeof jsonObj !== "object" || jsonObj === null) {
       return returnCallback();
     }
-    // Check if the path can be resolved by the jsonpath library
-    [resolvedPath] = jp.paths(jsonObj, path, 1);
-    if (typeof resolvedPath === "undefined") {
-      return returnCallback();
-    }
-    // Remove the dollar sign
-    resolvedPath.splice(0, 1);
+    throw new Error("Sorry but we removed JSONPath as the package is really unmaintained")
   }
 
   const lookupPath = createJsonPathScope(resolvedPath);
