@@ -97,4 +97,11 @@ describe("formatJsonPath", () => {
       "[m~n]",
     ]);
   });
+  test("enforces dot notation if set to", () => {
+    const input = "obj.foo/bar";
+
+    const result = formatJsonPath(input, "string", { enforceDotNotation: true });
+
+    expect(result).toStrictEqual("obj.foo/bar");
+  });
 });

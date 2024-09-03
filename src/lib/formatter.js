@@ -7,6 +7,7 @@ import { digitRE, objIdentifierRE, validObjectIdentifierDotNotationRE } from "./
  * @param {("string"|"array"|"inherit")} [expectedReturnType="inherit"] Indicate what type you want the json path returned. Array is split per key, values do not contain object notation. Inherit option checks the objectNotations type and returns the same type (string, array) as input.
  * @param {Object} [options] Options that can be provided to change the output format.
  * @param {boolean} [options.formatDigitAsNumber=false] Change digits to a numeric value if the return type is set to array.
+ * @param {boolean} [options.enforceDotNotation=false] Force the dot notation for libraries that cannot handle other object notations
  * @return {string|[string]} Json path
  */
 function formatJsonPath(objectNotations, expectedReturnType = "inherit", options = {}) {
@@ -30,9 +31,9 @@ function formatJsonPath(objectNotations, expectedReturnType = "inherit", options
   arrayOfObjectNotationKeys = arrayOfObjectNotationKeys.map((path, i) => {
     if (i === 0) {
       // The first item in a path scope does not use dot notation as it's the first element
-      return path.match(digitRE) || !path.match(validObjectIdentifierDotNotationRE) ? `[${path}]` : path;
+      return (path.match(digitRE) || !path.match(validObjectIdentifierDotNotationRE)) && options.enforceDotNotation !== true ? `[${path}]` : path;
     }
-    return path.match(digitRE) || !path.match(validObjectIdentifierDotNotationRE) ? `[${path}]` : `.${path}`;
+    return (path.match(digitRE) || !path.match(validObjectIdentifierDotNotationRE)) && options.enforceDotNotation !== true ? `[${path}]` : `.${path}`;
   });
 
   return arrayOfObjectNotationKeys.join("");

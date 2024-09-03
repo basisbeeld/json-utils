@@ -51,6 +51,7 @@ function convertJsonBPathIntoJsonPath(jsonBPath) {
  * @param {("string"|"array"|"inherit")} [expectedReturnType="string"] Indicate what type you want the json path returned. Array is split per key, values are not notated. Inherit option checks the objectNotations type and returns the same type as input.
  * @param {Object} [options] Options that can be provided to change the output format.
  * @param {boolean} [options.formatDigitAsNumber=false] Change digits to a numeric value if the return type is set to array.
+ * @param {boolean} [options.enforceDotNotation=false] Force the dot notation for libraries that cannot handle other object notations
  * @return {string|[string]} Json path
  */
 function createJsonPathScope(objectNotations, expectedReturnType = "string", options = {}) {
