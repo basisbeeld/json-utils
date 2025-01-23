@@ -1,10 +1,10 @@
 {
-  "name": "@ogd-software/json-utils",
+  "name": "@basisbeeld/json-utils",
   "version": "0.2.5",
   "description": "JSON utilities to process changes and paths in json objects",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ogd-software/json-utils.git"
+    "url": "git+https://github.com/basisbeeld/json-utils.git"
   },
   "author": "Incubator",
   "license": "MIT",
