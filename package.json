@@ -1,6 +1,6 @@
 {
   "name": "@basisbeeld/json-utils",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "JSON utilities to process changes and paths in json objects",
   "repository": {
     "type": "git",
